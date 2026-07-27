@@ -1,0 +1,11 @@
+fun main() {
+    print "Hello, World!";
+    var name = "Glacyend";
+    if (name == "Glacyend") {
+        print "Oh! You're Glacyend!";
+    } else {
+        print "Oh! You're not Glacyend!";
+    }
+}
+
+main();

@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 class Parser {
@@ -37,13 +38,80 @@ class Parser {
     }
 
     private Stmt statement() {
-        if (match(TokenType.Print)) {
+        if (match(TokenType.For)) {
+            return forStatement();
+        } else if (match(TokenType.If)) {
+            return ifStatement();
+        } else if (match(TokenType.Print)) {
             return printStatement();
+        } else if (match(TokenType.While)) {
+            return whileStatement();
         } else if (match(TokenType.LeftBrace)) {
             return new Stmt.Block(block());
         }
 
         return expressionStatement();
+    }
+
+    private Stmt forStatement() {
+        consume(TokenType.LeftParen, "Expect `(` after `for`.");
+
+        Stmt initializer;
+        if (match(TokenType.Semicolon)) {
+            initializer = null;
+        } else if (match(TokenType.Var)) {
+            initializer = varDeclaration();
+        } else {
+            initializer = expressionStatement();
+        }
+
+        Expr condition = null;
+        if (!check(TokenType.Semicolon)) {
+            condition = expression();
+        }
+        consume(TokenType.Semicolon, "Expect `;` after loop condition.");
+
+        Expr increment = null;
+        if (!check(TokenType.RightParen)) {
+            increment = expression();
+        }
+        consume(TokenType.RightParen, "Expect `)` after for clauses.");
+
+        Stmt body = statement();
+
+        if (increment != null) {
+            body = new Stmt.Block(
+                Arrays.asList(
+                    body,
+                    new Stmt.Expression(increment)
+                )
+            );
+        }
+
+        if (condition == null) {
+            condition = new Expr.Literal(true);
+        }
+        body = new Stmt.While(condition, body);
+
+        if (initializer != null) {
+            body = new Stmt.Block(Arrays.asList(initializer, body));
+        }
+
+        return body;
+    }
+
+    private Stmt ifStatement() {
+        consume(TokenType.LeftParen, "Expect `(` after `if`.");
+        Expr condition = expression();
+        consume(TokenType.RightParen, "Expect `)` after if condition.");
+
+        Stmt thenBranch = statement();
+        Stmt elseBranch = null;
+        if (match(TokenType.Else)) {
+            elseBranch = statement();
+        }
+
+        return new Stmt.If(condition, thenBranch, elseBranch);
     }
 
     private Stmt printStatement() {
@@ -64,6 +132,15 @@ class Parser {
         return new Stmt.Var(name, initializer);
     }
 
+    private Stmt whileStatement() {
+        consume(TokenType.LeftParen, "Expect `(` after `while`.");
+        Expr condition = expression();
+        consume(TokenType.RightParen, "Expect `)` after condition.");
+        Stmt body = statement();
+
+        return new Stmt.While(condition, body);
+    }
+
     private Stmt expressionStatement() {
         Expr expr = expression();
         consume(TokenType.Semicolon, "Expect `;` after expression.");
@@ -82,7 +159,7 @@ class Parser {
     }
 
     private Expr assignment() {
-        Expr expr = equality();
+        Expr expr = or();
 
         if (match(TokenType.Equal)) {
             Token equals = previous();
@@ -94,6 +171,30 @@ class Parser {
             }
 
             error(equals, "Invalid assignment target.");
+        }
+
+        return expr;
+    }
+
+    private Expr or() {
+        Expr expr = and();
+
+        while (match(TokenType.Or)) {
+            Token operator = previous();
+            Expr right = and();
+            expr = new Expr.Logical(expr, operator, right);
+        }
+
+        return expr;
+    }
+
+    private Expr and() {
+        Expr expr = equality();
+
+        while (match(TokenType.And)) {
+            Token operator = previous();
+            Expr right = equality();
+            expr = new Expr.Logical(expr, operator, right);
         }
 
         return expr;

@@ -1,5 +1,3 @@
-var startTime = clock();
-
 class Person {
     init(name, age) {
         this.name = name;
@@ -7,22 +5,99 @@ class Person {
     }
 
     greet() {
-        print "Hello, I'm " + this.name + "!";
+        print "Hello! I'm " + this.name + "!";
     }
 
-    printInfo() {
-        print "Name: ";
+    showInfo() {
+        print "Name:";
         print this.name;
-        print "Age: ";
+        print "Age:";
         print this.age;
     }
 }
 
-var person = Person("Glacyend", 16);
-person.greet();
-person.printInfo();
+class Student < Person {
+    init(name, age, school) {
+        super.init(name, age);
+        this.school = school;
+    }
 
-var endTime = clock();
+    showInfo() {
+        print "STUDENT INFORMATION";
+        super.showInfo();
+        print "School:";
+        print this.school;
+    }
+}
 
-print "Program Execution Time (ms)";
-print (endTime - startTime) * 1000;
+class Teacher < Person {
+    init(name, age, subject) {
+        super.init(name, age);
+        this.subject = subject;
+    }
+
+    showInfo() {
+        print "TEACHER INFORMATION";
+        super.showInfo();
+        print "Subject:";
+        print this.subject;
+    }
+}
+
+fun getUser(identity, name) {
+    var user;
+    if (identity == "1") {
+        print "You're a student. Your default age is 16.";
+
+        print "Enter your school here:";
+        var school = readline();
+
+        while (school == "") {
+            print "You entered an empty string. Please try again.";
+            school = readline();
+        }
+
+        user = Student(name, 16, school);
+    } else if (identity == "2") {
+        print "You're a teacher. Your default age is 25.";
+
+        print "Enter your subject here:";
+        var subject = readline();
+
+        while (subject == "") {
+            print "You entered an empty string. Please try again.";
+            subject = readline();
+        }
+
+        user = Teacher(name, 25, subject);
+    }
+
+    return user;
+}
+
+print "Enter your name here:";
+var name = readline();
+
+while (name == "") {
+    print "You entered an empty string. Please try again.";
+    name = readline();
+}
+
+print "Choose your identity (enter the number):";
+print "1. Student";
+print "2. Teacher";
+var identity = readline();
+
+while (identity != "1" and identity != "2") {
+    print "You entered an invalid choice. Please try again.";
+    identity = readline();
+}
+
+var user = getUser(identity, name);
+
+print "Information collection finished.";
+print "Below is your information.";
+print "";
+
+user.greet();
+user.showInfo();

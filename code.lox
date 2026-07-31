@@ -1,15 +1,26 @@
 var startTime = clock();
 
-var a = "global";
-{
-    fun showA() {
-        print a;
+class Person {
+    init(name, age) {
+        this.name = name;
+        this.age = age;
     }
 
-    showA();
-    var a = "inner";
-    showA();
+    greet() {
+        print "Hello, I'm " + this.name + "!";
+    }
+
+    printInfo() {
+        print "Name: ";
+        print this.name;
+        print "Age: ";
+        print this.age;
+    }
 }
+
+var person = Person("Glacyend", 16);
+person.greet();
+person.printInfo();
 
 var endTime = clock();
 
